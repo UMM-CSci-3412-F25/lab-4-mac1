@@ -31,25 +31,6 @@ char *disemvowel(char *str) {
     result[j] = '\0'; // Null-terminate the resulting string
 
     return result;
-
-     if (str == NULL) {
-    return (char*) "";
-}
-    size_t len = strlen(str);
-    char *result = malloc(len + 1); // Allocate memory for the result
-    if (result == NULL) {
-        return NULL; // Memory allocation failed
-    }
-
-    size_t j = 0;
-    for (size_t i = 0; i < len; i++) {
-        if (!is_vowel(str[i])) {
-            result[j++] = str[i];
-        }
-    }
-    result[j] = '\0'; // Null-terminate the resulting string
-
-    return result;
 }
 
 
