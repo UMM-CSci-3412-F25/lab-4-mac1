@@ -16,6 +16,23 @@ bool is_dir(const char* path) {
    * return value from stat() in case there is a problem, e.g., maybe the
    * the file doesn't actually exist.
    */
+
+  struct stat buf;
+  if (stat(path, &buf) != 0) {
+    perror("stat failed");
+    exit(EXIT_FAILURE);
+  }
+
+  return S_ISDIR(buf.st_mode);
+}
+bool is_regular_file(const char* path) {
+  struct stat buf;
+  if (stat(path, &buf) != 0) {
+    perror("stat failed");
+    exit(EXIT_FAILURE);
+  }
+
+  return S_ISREG(buf.st_mode);
 }
 
 /* 
@@ -36,6 +53,40 @@ void process_directory(const char* path) {
    * with a matching call to chdir() to move back out of it when you're
    * done.
    */
+
+  if (is_dir(path)) {
+    num_dirs++;
+
+    DIR* dir = opendir(path);
+    if (dir == NULL) {
+      perror("opendir failed");
+      exit(EXIT_FAILURE);
+    }
+
+    // Change to the target directory
+    if (chdir(path) != 0) {
+      perror("chdir failed");
+      closedir(dir);
+      exit(EXIT_FAILURE);
+    }
+
+    struct dirent* entry;
+    while ((entry = readdir(dir)) != NULL) {
+      // Skip "." and ".." entries
+      if (strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+        process_path(entry->d_name);
+      }
+    }
+
+    // Change back to the parent directory
+    if (chdir("..") != 0) {
+      perror("chdir to parent failed");
+      closedir(dir);
+      exit(EXIT_FAILURE);
+    }
+
+    closedir(dir);
+  }
 }
 
 void process_file(const char* path) {
@@ -43,6 +94,13 @@ void process_file(const char* path) {
    * Update the number of regular files.
    * This is as simple as it seems. :-)
    */
+
+   struct stat s;
+    if (stat(path, &s) != 0) {
+      perror("stat failed");
+      exit(EXIT_FAILURE);
+    }
+    num_regular++;
 }
 
 void process_path(const char* path) {
